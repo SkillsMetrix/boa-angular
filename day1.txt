@@ -1,0 +1,75 @@
+<p>My Name is {{myname}} and my city is  {{mycity}}</p>
+
+<br/>
+
+<ul>
+    <li *ngFor="let user of users">
+        {{user}}
+    </li>
+</ul>
+
+<hr>
+
+<ul>
+    <li *ngFor="let user of userdata">
+        {{user.uname}} --{{user.email}}
+    </li>
+</ul>
+
+--------------
+
+import { Component } from '@angular/core';
+import { UsersService } from '../../shared/services/users.service';
+import { Users } from '../../shared/objects/Users';
+
+@Component({
+  selector: 'app-header',
+  templateUrl: './header.component.html',
+  styleUrl: './header.component.css',
+  
+})
+export class HeaderComponent {
+
+  myname = 'amarjeet'
+  mycity = 'pune'
+
+  users: string[] = []
+  userdata:Users[]=[]
+  // injecting the service in components
+  constructor(private us: UsersService) {
+    this.users = this.us.loadUsers()
+    this.userdata=this.us.loadUserObj()
+  }
+
+}
+---
+
+
+
+
+export interface Users{
+    uname:string,
+    email:string,
+    income:number
+}
+----
+
+import { Injectable } from '@angular/core';
+import { Users } from '../objects/Users';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class UsersService {
+
+  loadUsers(): string[] {
+    return ['admin', 'manager', 'qa']
+  }
+  loadUserObj(): Users[] {
+    return [
+      { uname: 'mohan', email: "mohan@mail.com", income: 2345 },
+      { uname: 'shivam', email: "shivam@mail.com", income: 3345 },
+    ]
+  }
+
+}
