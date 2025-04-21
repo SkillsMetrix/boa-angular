@@ -15,8 +15,21 @@
         {{user.uname}} --{{user.email}}
     </li>
 </ul>
+<hr>
+UserName:<input type="text" [(ngModel)]="myname">
+<img [src]="profilePic">
+<button (click)="addUser()">add</button>
 
---------------
+<hr>
+<p>Dynamic style</p>
+<ul *ngFor="let person of people">
+    <li [ngStyle]="{'color':getColor(person.country)}">
+        {{person.name}} --{{person.country}}
+    </li>
+</ul>
+
+------------------
+
 
 import { Component } from '@angular/core';
 import { UsersService } from '../../shared/services/users.service';
@@ -26,50 +39,51 @@ import { Users } from '../../shared/objects/Users';
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
-  
+
 })
 export class HeaderComponent {
 
   myname = 'amarjeet'
   mycity = 'pune'
-
+  profilePic = 'https://i.pinimg.com/236x/db/1f/9a/db1f9a3eaca4758faae5f83947fa807c.jpg'
   users: string[] = []
-  userdata:Users[]=[]
+  userdata: Users[] = []
+  addUser() {
+    console.log('user is added');
+
+  }
   // injecting the service in components
   constructor(private us: UsersService) {
     this.users = this.us.loadUsers()
-    this.userdata=this.us.loadUserObj()
+    this.userdata = this.us.loadUserObj()
   }
 
-}
----
+  people: any[] = [
+    {
+      "name": 'User-1',
+      "country": "USA"
+    },
+    {
+      "name": 'User-2',
+      "country": "UK"
+    },
+    {
+      "name": 'User-3',
+      "country": "INDIA"
+    },
+  ]
 
-
-
-
-export interface Users{
-    uname:string,
-    email:string,
-    income:number
-}
-----
-
-import { Injectable } from '@angular/core';
-import { Users } from '../objects/Users';
-
-@Injectable({
-  providedIn: 'root'
-})
-export class UsersService {
-
-  loadUsers(): string[] {
-    return ['admin', 'manager', 'qa']
-  }
-  loadUserObj(): Users[] {
-    return [
-      { uname: 'mohan', email: "mohan@mail.com", income: 2345 },
-      { uname: 'shivam', email: "shivam@mail.com", income: 3345 },
-    ]
+  getColor(country: string) {
+    switch (country) {
+      case 'UK':
+        return 'green'
+      case 'USA':
+        return 'blue'
+      case 'INDIA':
+        return 'purple'
+      default:
+        return country
+    }
   }
 
 }
