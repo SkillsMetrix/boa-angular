@@ -1,0 +1,35 @@
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            User Registration Form
+        </div>
+        <div class="card-body">
+            <form (ngSubmit)="addUser(data)" #data=ngForm>
+                UserName: <input type="text" name="uname" ngModel #un=ngModel required>
+                <div *ngIf="un.hasError('required')"><p>Username cant be blank</p></div>
+
+
+                Password: <input type="password" name="pass" ngModel #pwd=ngModel required minlength="6">
+
+                <div *ngIf="(pwd.invalid && (pwd.dirty || pwd.touched)) ">
+                <div *ngIf="pwd.hasError('required')"><p>Password cant be blank</p></div>
+                <div *ngIf="pwd.hasError('minlength')"><p>Password must be 6 char long</p></div>
+                </div>
+
+
+                Email: <input type="email" name="email" ngModel #em=ngModel required email >
+
+                <div *ngIf="em.invalid">
+                    <div *ngIf="em.hasError('required')">Email cant be blank</div>
+                    <div *ngIf="em.hasError('email')">Email must be formatted</div>
+                    </div>
+
+                State: <select name="state" ngModel>
+                    <option *ngFor="let state of states" [value]="state">{{state}}</option>
+                </select>
+                City: <input type="text" name="city" ngModel> &nbsp;
+                <button class="btn btn-primary" [disabled]="data.invalid">Register</button>
+            </form>
+        </div>
+    </div>
+</div>
