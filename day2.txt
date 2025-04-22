@@ -4,32 +4,70 @@
             User Registration Form
         </div>
         <div class="card-body">
-            <form (ngSubmit)="addUser(data)" #data=ngForm>
-                UserName: <input type="text" name="uname" ngModel #un=ngModel required>
-                <div *ngIf="un.hasError('required')"><p>Username cant be blank</p></div>
+            <form [formGroup]="empForm" (ngSubmit)="addUser()">
+                UserName: <input type="text" formControlName="uname">
+                <div *ngIf="empForm.get('uname')?.hasError('required')">
+                    <p>Username cant be blank</p>
+                </div>
 
+                Password: <input type="password" formControlName="password">
 
-                Password: <input type="password" name="pass" ngModel #pwd=ngModel required minlength="6">
-
-                <div *ngIf="(pwd.invalid && (pwd.dirty || pwd.touched)) ">
-                <div *ngIf="pwd.hasError('required')"><p>Password cant be blank</p></div>
-                <div *ngIf="pwd.hasError('minlength')"><p>Password must be 6 char long</p></div>
+                <div *ngIf="(empForm.get('password')?.invalid) ">
+                    <div *ngIf="(empForm.get('password')?.hasError('required'))">
+                        <p>Password cant be blank</p>
+                    </div>
+                    <div *ngIf="(empForm.get('password')?.hasError('minlength'))">
+                        <p>Password must be 6 char long</p>
+                    </div>
                 </div>
 
 
-                Email: <input type="email" name="email" ngModel #em=ngModel required email >
 
-                <div *ngIf="em.invalid">
-                    <div *ngIf="em.hasError('required')">Email cant be blank</div>
-                    <div *ngIf="em.hasError('email')">Email must be formatted</div>
-                    </div>
 
-                State: <select name="state" ngModel>
+                Email: <input type="email" formControlName="email">
+                State: <select formControlName="state">
+
                     <option *ngFor="let state of states" [value]="state">{{state}}</option>
                 </select>
-                City: <input type="text" name="city" ngModel> &nbsp;
-                <button class="btn btn-primary" [disabled]="data.invalid">Register</button>
+                City: <input type="text" formControlName="city"> &nbsp;
+                <button class="btn btn-primary" [disabled]="empForm.invalid">Register</button>
             </form>
         </div>
     </div>
 </div>
+
+--------------
+
+
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UsersService } from '../../shared/services/users.service';
+
+@Component({
+  selector: 'app-employee',
+  templateUrl: './employee.component.html',
+  styleUrl: './employee.component.css'
+})
+export class EmployeeComponent implements OnInit {
+
+  empForm: FormGroup
+  addUser() {
+    console.log(this.empForm.value);
+
+
+  }
+  states: any = []
+  constructor(private service: UsersService, private fb: FormBuilder) {
+    this.empForm = this.fb.group({
+      uname: ['',[Validators.required]],
+      password: ['',[Validators.required,Validators.minLength(6)]],
+      email: '',
+      city: '',
+      state: ''
+    })
+
+  }
+  ngOnInit(): void {
+    this.states = this.service.loadStates()
+  }
+}
