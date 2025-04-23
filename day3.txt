@@ -45,87 +45,68 @@ export class UsersService {
     }
     return this.http.get<any[]>(`${this.URL}?uname_like=${term}`)
   }
+
+
+  getUser(): Observable<any> {
+    return this.http.get('https://jsonplaceholder.typicode.com/users/1')
+  }
+  getPosts(): Observable<any> {
+    return this.http.get('https://jsonplaceholder.typicode.com/posts?userId=1')
+  }
+  getComments(): Observable<any> {
+    return this.http.get('https://jsonplaceholder.typicode.com/comments?postId=1')
+  }
 }
-----
+
+-----------------
+
+
 import { Component, OnInit } from '@angular/core';
 import { UsersService } from '../../shared/services/users.service';
-import { FormControl } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, switchMap} from 'rxjs/operators';
-import {Observable, of } from 'rxjs'
+import { HttpClient } from '@angular/common/http';
+import { forkJoin, Observable } from 'rxjs';
 
 @Component({
-  selector: 'app-company',
-  templateUrl: './company.component.html',
-  styleUrl: './company.component.css'
+  selector: 'app-portfolio',
+  templateUrl: './portfolio.component.html',
+  styleUrl: './portfolio.component.css'
 })
-export class CompanyComponent implements OnInit {
-  searchControl = new FormControl()
+export class PortfolioComponent implements OnInit {
 
-  users$: Observable<any[]> = of([])
-  userData: any[] = []
   constructor(private service: UsersService) { }
+  user: any
+  posts: any[] = []
+  comments: any[] = []
   ngOnInit(): void {
-    this.users$ = this.searchControl.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap((term) => this.service.serachUsers(term))
-
-    )
-
-    this.loadUsers()
-  }
-  loadUsers() {
-    this.service.loadUsers().subscribe((data) => {
-      this.userData = data
+    forkJoin({
+      user: this.service.getUser(),
+      posts: this.service.getPosts(),
+      comments: this.service.getComments()
+    }).subscribe(({ user, posts, comments }) => {
+      this.user = user
+      this.posts = posts
+      this.comments = comments
     })
   }
-  deleteUser(id: string) {
-    this.service.userDelete(id).subscribe((data) => {
-      console.log(`${id} deleted`);
-      this.loadUsers()
-
-    })
-  }
-
-
 
 }
-----
 
-<div class="container">
-    <div class="card">
-        <div class="card-header">
-            Search User: <input type="text" [formControl]="searchControl" placeholder="Enter Name">
-            <hr>
-            <ul *ngIf="users$ | async as userData">
-                <li *ngFor="let user of userData">
-                    <strong>{{user.uname}}--{{user.email}}</strong>
-                </li>
-            </ul>
-        </div>
-        <div class="card-body">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">UserName</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">City</th>
-                        <th scope="col">State</th>
-                        <th scope="col">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let user of userData">
-                        <td>{{user.id}}</td>
-                        <td>{{user.uname}}</td>
-                        <td>{{user.email}}</td>
-                        <td>{{user.city}}</td>
-                        <td>{{user.state}}</td>
-                        <td><button (click)="deleteUser(user.id)" class="btn btn-danger">Delete</button></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+
+-----------------
+
+
+
+
+<h3>User :{{user.name}}</h3>
+
+<h2>Posts</h2>
+
+<ul>
+    <li *ngFor="let post of posts">{{post.title}}</li>
+</ul>
+
+<h2>Comments</h2>
+
+<ul>
+    <li *ngFor="let post of comments">{{post.body}}</li>
+</ul>
