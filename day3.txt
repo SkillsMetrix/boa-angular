@@ -2,162 +2,106 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { RouteGuards } from '../guards/routeguards';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 
 export class UsersService {
-  URL='http://localhost:3000/users'
+  URL = 'http://localhost:3000/users'
   loadStates(): string[] {
     return ['KAR', 'TN', 'DL', 'MH'];
   }
   addUserToDB(data: any) {
-   // localStorage.setItem('user', JSON.stringify(data));
-   this.http.post(this.URL,data).subscribe((data)=>{
-    console.log(data);
-    
-   })
+    // localStorage.setItem('user', JSON.stringify(data));
+    this.http.post(this.URL, data).subscribe((data) => {
+      console.log(data);
+
+    })
     this.route.navigateByUrl('/login');
   }
-  loadUsers():Observable<any>{
-   return this.http.get(this.URL)
-     
+  loadUsers(): Observable<any> {
+    return this.http.get(this.URL)
+
   }
   userLogin(login: any) {
     this.guard.isAllowed = true;
     this.route.navigateByUrl('/portfolio');
   }
-  constructor(private route: Router, private guard: RouteGuards,private http:HttpClient) {}
+  constructor(private route: Router, private guard: RouteGuards, private http: HttpClient) { }
 
-  userLogout(){
+  userLogout() {
     this.guard.isAllowed = false;
     this.route.navigateByUrl('/login');
   }
+  userDelete(id: string) {
+    return this.http.delete('http://localhost:3000/users/' + id)
+  }
+
+  serachUsers(term: string): Observable<any[]> {
+    if (!term.trim()) {
+      return of([])
+    }
+    return this.http.get<any[]>(`${this.URL}?uname_like=${term}`)
+  }
 }
-
-----------------------
-
+----
 import { Component, OnInit } from '@angular/core';
 import { UsersService } from '../../shared/services/users.service';
+import { FormControl } from '@angular/forms';
+import { debounceTime, distinctUntilChanged, switchMap} from 'rxjs/operators';
+import {Observable, of } from 'rxjs'
 
 @Component({
   selector: 'app-company',
   templateUrl: './company.component.html',
   styleUrl: './company.component.css'
 })
-export class CompanyComponent implements OnInit{
+export class CompanyComponent implements OnInit {
+  searchControl = new FormControl()
 
-userData:any[]=[]
-  constructor(private service:UsersService){}
+  users$: Observable<any[]> = of([])
+  userData: any[] = []
+  constructor(private service: UsersService) { }
   ngOnInit(): void {
-      this.service.loadUsers().subscribe((data)=>{
-        this.userData=data
-      })
+    this.users$ = this.searchControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((term) => this.service.serachUsers(term))
+
+    )
+
+    this.loadUsers()
   }
-}
-
-
-
---------------
-
-
-
-
-<p>User Data</p>
-
-<ul>
-    <li *ngFor="let user of userData">
-        {{user | json}}
-    </li>
-</ul>
-
-
-----------
-
-
-
-import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import { RouteGuards } from '../guards/routeguards';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-
-@Injectable({
-  providedIn: 'root',
-})
-
-export class UsersService {
-  URL='http://localhost:3000/users'
-  loadStates(): string[] {
-    return ['KAR', 'TN', 'DL', 'MH'];
-  }
-  addUserToDB(data: any) {
-   // localStorage.setItem('user', JSON.stringify(data));
-   this.http.post(this.URL,data).subscribe((data)=>{
-    console.log(data);
-    
-   })
-    this.route.navigateByUrl('/login');
-  }
-  loadUsers():Observable<any>{
-   return this.http.get(this.URL)
-     
-  }
-  userLogin(login: any) {
-    this.guard.isAllowed = true;
-    this.route.navigateByUrl('/portfolio');
-  }
-  constructor(private route: Router, private guard: RouteGuards,private http:HttpClient) {}
-
-  userLogout(){
-    this.guard.isAllowed = false;
-    this.route.navigateByUrl('/login');
-  }
-  userDelete(id:string){
-    return this.http.delete('http://localhost:3000/users/'+id)
-  }
-}
-
-
--------------
-
-import { Component, OnInit } from '@angular/core';
-import { UsersService } from '../../shared/services/users.service';
-
-@Component({
-  selector: 'app-company',
-  templateUrl: './company.component.html',
-  styleUrl: './company.component.css'
-})
-export class CompanyComponent implements OnInit{
-
-userData:any[]=[]
-  constructor(private service:UsersService){}
-  ngOnInit(): void {
-     this.loadUsers()
-  }
-  loadUsers(){
-    this.service.loadUsers().subscribe((data)=>{
-      this.userData=data
+  loadUsers() {
+    this.service.loadUsers().subscribe((data) => {
+      this.userData = data
     })
   }
-  deleteUser(id:string){
-    this.service.userDelete(id).subscribe((data)=>{
+  deleteUser(id: string) {
+    this.service.userDelete(id).subscribe((data) => {
       console.log(`${id} deleted`);
       this.loadUsers()
-      
+
     })
   }
-}
 
-------------------
+
+
+}
+----
 
 <div class="container">
     <div class="card">
         <div class="card-header">
-            User Details
+            Search User: <input type="text" [formControl]="searchControl" placeholder="Enter Name">
+            <hr>
+            <ul *ngIf="users$ | async as userData">
+                <li *ngFor="let user of userData">
+                    <strong>{{user.uname}}--{{user.email}}</strong>
+                </li>
+            </ul>
         </div>
         <div class="card-body">
             <table class="table">
