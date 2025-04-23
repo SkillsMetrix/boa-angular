@@ -1,0 +1,41 @@
+<div class="container">
+    <ul class="nav">
+        <li class="nav-item">
+            <a *ngIf="!guard.isAllowed" class="nav-link active" routerLink="login">Login</a>
+        </li>
+        <li class="nav-item">
+            <a *ngIf="!guard.isAllowed" class="nav-link active" routerLink="register">Register</a>
+        </li>
+        <li class="nav-item">
+            <a *ngIf="guard.isAllowed" class="nav-link active" routerLink="portfolio">Portfolio</a>
+        </li>
+        <li class="nav-item">
+            <a *ngIf="guard.isAllowed" class="nav-link active" routerLink="userdetails">UserDetails</a>
+        </li>
+        <li *ngIf="guard.isAllowed"><button class="btn btn-warning" (click)="logout()">Logout</button></li>
+    </ul>
+</div>
+
+
+----------
+
+import { Component } from '@angular/core';
+import { RouteGuards } from '../../shared/guards/routeguards';
+import { UsersService } from '../../shared/services/users.service';
+
+@Component({
+  selector: 'app-navbar',
+  templateUrl: './navbar.component.html',
+  styleUrl: './navbar.component.css'
+})
+export class NavbarComponent {
+ 
+  constructor(public guard:RouteGuards,private service:UsersService){
+   
+  }
+logout(){
+  this.service.userLogout()
+}
+
+}
+-------------
