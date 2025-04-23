@@ -72,3 +72,116 @@ userData:any[]=[]
         {{user | json}}
     </li>
 </ul>
+
+
+----------
+
+
+
+import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
+import { RouteGuards } from '../guards/routeguards';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+
+export class UsersService {
+  URL='http://localhost:3000/users'
+  loadStates(): string[] {
+    return ['KAR', 'TN', 'DL', 'MH'];
+  }
+  addUserToDB(data: any) {
+   // localStorage.setItem('user', JSON.stringify(data));
+   this.http.post(this.URL,data).subscribe((data)=>{
+    console.log(data);
+    
+   })
+    this.route.navigateByUrl('/login');
+  }
+  loadUsers():Observable<any>{
+   return this.http.get(this.URL)
+     
+  }
+  userLogin(login: any) {
+    this.guard.isAllowed = true;
+    this.route.navigateByUrl('/portfolio');
+  }
+  constructor(private route: Router, private guard: RouteGuards,private http:HttpClient) {}
+
+  userLogout(){
+    this.guard.isAllowed = false;
+    this.route.navigateByUrl('/login');
+  }
+  userDelete(id:string){
+    return this.http.delete('http://localhost:3000/users/'+id)
+  }
+}
+
+
+-------------
+
+import { Component, OnInit } from '@angular/core';
+import { UsersService } from '../../shared/services/users.service';
+
+@Component({
+  selector: 'app-company',
+  templateUrl: './company.component.html',
+  styleUrl: './company.component.css'
+})
+export class CompanyComponent implements OnInit{
+
+userData:any[]=[]
+  constructor(private service:UsersService){}
+  ngOnInit(): void {
+     this.loadUsers()
+  }
+  loadUsers(){
+    this.service.loadUsers().subscribe((data)=>{
+      this.userData=data
+    })
+  }
+  deleteUser(id:string){
+    this.service.userDelete(id).subscribe((data)=>{
+      console.log(`${id} deleted`);
+      this.loadUsers()
+      
+    })
+  }
+}
+
+------------------
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            User Details
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">UserName</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">City</th>
+                        <th scope="col">State</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let user of userData">
+                        <td>{{user.id}}</td>
+                        <td>{{user.uname}}</td>
+                        <td>{{user.email}}</td>
+                        <td>{{user.city}}</td>
+                        <td>{{user.state}}</td>
+                        <td><button (click)="deleteUser(user.id)" class="btn btn-danger">Delete</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
