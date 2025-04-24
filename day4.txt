@@ -1,1 +1,78 @@
-https://github.com/SkillsMetrix/qual-angular/blob/main/ngrx-template.zip
+import { createReducer, on } from "@ngrx/store";
+import { Movie } from "src/app/Models/movie";
+import { getMovies } from "../Actions/movie.actions";
+
+
+export interface MovieState {
+    movies: ReadonlyArray<Movie>
+}
+
+const initialState: ReadonlyArray<Movie> = []
+
+export const movieReducer = createReducer(
+    initialState,
+    on(getMovies, (state) => [...mockMovies()])
+)
+
+function mockMovies(): Movie[] {
+    const movie = new Movie(
+        'Avenger: Endgame',
+        2798,
+        new Date('26 Apr, 2019 05:30:00')
+    );
+    movie.id = 1;
+
+    const movie1 = new Movie(
+        'Avengers: Infinity War',
+        2048,
+        new Date('27 Apr, 2018 05:30:00')
+    );
+    movie1.id = 2;
+
+    const movie2 = new Movie(
+        'Age of Ultron',
+        1403,
+        new Date('01 May, 2015 05:30:00')
+    );
+    movie2.id = 3;
+
+    const movies = [movie, movie1, movie2];
+    return movies;
+}
+
+
+------
+
+import { Component, Input, OnInit } from '@angular/core';
+import { Movie } from '../Models/movie';
+import { DataService } from '../Service/data.service';
+import { Store } from '@ngrx/store';
+import { MovieState } from '../Store/Reducers/movie.reducers';
+
+@Component({
+  selector: 'app-movie-list',
+  templateUrl: './movie-list.component.html',
+  styleUrls: ['./movie-list.component.css'],
+})
+export class MovieListComponent implements OnInit {
+  @Input()
+  movies: Movie[] = [];
+  movies$= this.store.select('movies')
+  constructor(private store:Store<MovieState>) {}
+
+  ngOnInit(): void {}
+}
+
+
+----
+
+<div class="movies">
+    <section *ngFor="let movie of movies$ | async">
+        <mat-card>
+            <h1> {{movie.name}} </h1>
+            <h2> {{ movie.releaseDate | date }} </h2>
+            <h3> ${{ movie.earning }} million </h3>
+        </mat-card>
+    </section>
+</div>
+
