@@ -24,6 +24,25 @@ export class MovieEffects {
 ---
 
 
+import { createAction } from '@ngrx/store'
+import { Movie } from 'src/app/Models/movie'
+
+export const getMovies = createAction('[Movie] Get Movies Called....!')
+
+export const getMoviesSuccess = createAction('loading movies from services',
+    (movies: ReadonlyArray<Movie>) => ({ movies })
+)
+
+export const addMovies = createAction('[Movie Added] new Movie added...!',
+    (movie: Movie) => ({movie})
+)
+
+
+export const addMovieSucess = createAction('movie added successfully', (movie: Movie) => ({ movie }))
+
+
+------------------
+
 import { createReducer, on } from "@ngrx/store";
 import { Movie } from "src/app/Models/movie";
 import { addMovies, getMovies, getMoviesSuccess } from "../Actions/movie.actions";
