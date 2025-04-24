@@ -1,9 +1,10 @@
 
+
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects'
 import { DataService } from 'src/app/Service/data.service';
-import { getMovies, getMoviesSuccess } from '../Actions/movie.actions';
-import { exhaustMap, map } from 'rxjs/operators';
+import { addMovies, addMovieSucess, getMovies, getMoviesSuccess } from '../Actions/movie.actions';
+import { concatMap, exhaustMap, map, tap } from 'rxjs/operators';
 
 @Injectable()
 export class MovieEffects {
@@ -15,10 +16,25 @@ export class MovieEffects {
                     map((movies) => getMoviesSuccess(movies))
                 )
             )
+        ))
+
+    addMovies$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(addMovies),
+            tap((movie) => console.log(movie)),
+                concatMap(({ movie }) =>
+                    this.dataService.addMovies(movie).pipe(
+                        map((newMovie) => addMovieSucess(newMovie))
+                    )
+
+                )
+
+            )
+
         )
 
 
-    )
+    
     constructor(private action$: Actions, private dataService: DataService) { }
 }
 ---
@@ -45,7 +61,7 @@ export const addMovieSucess = createAction('movie added successfully', (movie: M
 
 import { createReducer, on } from "@ngrx/store";
 import { Movie } from "src/app/Models/movie";
-import { addMovies, getMovies, getMoviesSuccess } from "../Actions/movie.actions";
+import { addMovies, addMovieSucess, getMovies, getMoviesSuccess } from "../Actions/movie.actions";
 
 
 export interface MovieState {
@@ -57,6 +73,9 @@ const initialState: ReadonlyArray<Movie> = []
 export const movieReducer = createReducer(
     initialState,
     on(getMoviesSuccess, (state,{movies}) => [...movies]),
+    on(addMovieSucess,(state,{movie}) => [...state,movie])
    
 )
+
+
 
