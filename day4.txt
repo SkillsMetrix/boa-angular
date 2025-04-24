@@ -1,6 +1,32 @@
+
+import { Injectable } from '@angular/core';
+import { Actions, createEffect, ofType } from '@ngrx/effects'
+import { DataService } from 'src/app/Service/data.service';
+import { getMovies, getMoviesSuccess } from '../Actions/movie.actions';
+import { exhaustMap, map } from 'rxjs/operators';
+
+@Injectable()
+export class MovieEffects {
+    loadMovies$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(getMovies),
+            exhaustMap(() =>
+                this.dataService.getMovies().pipe(
+                    map((movies) => getMoviesSuccess(movies))
+                )
+            )
+        )
+
+
+    )
+    constructor(private action$: Actions, private dataService: DataService) { }
+}
+---
+
+
 import { createReducer, on } from "@ngrx/store";
 import { Movie } from "src/app/Models/movie";
-import { getMovies } from "../Actions/movie.actions";
+import { addMovies, getMovies, getMoviesSuccess } from "../Actions/movie.actions";
 
 
 export interface MovieState {
@@ -11,106 +37,7 @@ const initialState: ReadonlyArray<Movie> = []
 
 export const movieReducer = createReducer(
     initialState,
-    on(getMovies, (state) => [...mockMovies()])
+    on(getMoviesSuccess, (state,{movies}) => [...movies]),
+   
 )
 
-function mockMovies(): Movie[] {
-    const movie = new Movie(
-        'Avenger: Endgame',
-        2798,
-        new Date('26 Apr, 2019 05:30:00')
-    );
-    movie.id = 1;
-
-    const movie1 = new Movie(
-        'Avengers: Infinity War',
-        2048,
-        new Date('27 Apr, 2018 05:30:00')
-    );
-    movie1.id = 2;
-
-    const movie2 = new Movie(
-        'Age of Ultron',
-        1403,
-        new Date('01 May, 2015 05:30:00')
-    );
-    movie2.id = 3;
-
-    const movies = [movie, movie1, movie2];
-    return movies;
-}
-
-
-------
-
-import { Component, Input, OnInit } from '@angular/core';
-import { Movie } from '../Models/movie';
-import { DataService } from '../Service/data.service';
-import { Store } from '@ngrx/store';
-import { MovieState } from '../Store/Reducers/movie.reducers';
-
-@Component({
-  selector: 'app-movie-list',
-  templateUrl: './movie-list.component.html',
-  styleUrls: ['./movie-list.component.css'],
-})
-export class MovieListComponent implements OnInit {
-  @Input()
-  movies: Movie[] = [];
-  movies$= this.store.select('movies')
-  constructor(private store:Store<MovieState>) {}
-
-  ngOnInit(): void {}
-}
-
-
-----
-
-<div class="movies">
-    <section *ngFor="let movie of movies$ | async">
-        <mat-card>
-            <h1> {{movie.name}} </h1>
-            <h2> {{ movie.releaseDate | date }} </h2>
-            <h3> ${{ movie.earning }} million </h3>
-        </mat-card>
-    </section>
-</div>
-
--------
-
-import { Component, OnInit } from '@angular/core';
- import { Movie } from './Models/movie';
-import { DataService } from './Service/data.service';
-import { Store } from '@ngrx/store';
-import { addMovies, getMovies } from './Store/Actions/movie.actions';
-
-@Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
-})
-export class AppComponent implements OnInit {
-  movies: Movie[] = [];
-  newMovie: Movie = new Movie();
-  title = 'movieApp';
-  constructor(private dataService: DataService,private store:Store) {}
-
-  ngOnInit(): void {
-    this.getAllMovies();
-  }
-
-  getAllMovies(): void {
-    this.store.dispatch(getMovies())
-    this.dataService.getMovies().subscribe((movies: Movie[]) => {
-      this.movies = movies;
-    });
-  }
-
-  addNewMovies(): void {
-    this.store.dispatch(addMovies(this.newMovie))
-    this.dataService.addMovies(this.newMovie).subscribe((res) => {
-      this.getAllMovies();
-      this.newMovie = new Movie();
-    });
-  }
-}
