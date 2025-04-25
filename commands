@@ -1,0 +1,33 @@
+Bootstrap
+angular material
+registration page with error handling and custom validator
+feature modules
+NGRX
+lazy loading
+standalone
+@if => ngif     commonmodule
+@for => ngFor
+
+absolute standalone app with ang18
+standalone app with ang18 with module
+
+
+--------
+create a custom pipe which takes string input and convert into the reverse value (ie) hello ->olleh
+
+
+
+Change Detection
+
+signals
+
+
+DomSanitizer
+
+CSP (content security policy) + JWT (JSON Web Token)
+nodeJS with express
+
+Jasmine and karma
+
+
+ng g config karma
