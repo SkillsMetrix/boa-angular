@@ -1,3 +1,35 @@
+import { CommonModule } from '@angular/common';
+import { Component, computed, signal } from '@angular/core';
+
+@Component({
+  selector: 'app-mainapp',
+  standalone: true,
+  imports: [],
+  templateUrl: './mainapp.component.html',
+  styleUrl: './mainapp.component.css'
+})
+export class MainappComponent {
+
+  users = ['user1', 'user2']
+  data = false
+
+  firstName = signal('admin')
+  lastName = signal('manager')
+
+  fullName = computed(() => {
+    return this.firstName() + ' ' + this.lastName()
+  })
+
+  changeFirstName(fname: any) {
+    this.firstName.set(fname)
+  }
+  changeLastName(lname: any) {
+    this.lastName.set(lname)
+  }
+
+}
+--------
+
 <table class="table">
     <thead>
         <tr>
@@ -9,19 +41,19 @@
     <tbody>
         <tr>
             <td>
-                {{firstName}}
+                {{firstName()}}
             </td>
             <td>
-                {{lastName}}
+                {{lastName()}}
             </td>
             <td>
-                {{fullName}}
+                {{fullName()}}
             </td>
         </tr>
         <tr>
             <td>
                 <div class="input-group mb-3">
-                    <input type="text" class="form-control" [value]="firstName" #fname placeholder="Change First Name">
+                    <input type="text" class="form-control" [value]="firstName()" #fname placeholder="Change First Name">
                     <button (click)="changeFirstName(fname.value)" class="btn btn-outline-primary" type="button">
                         Change First Name
                     </button>
@@ -30,7 +62,7 @@
             </td>
             <td>
                 <div class="input-group mb-3">
-                    <input type="text" class="form-control" [value]="lastName" #lname placeholder="Change Last Name">
+                    <input type="text" class="form-control" [value]="lastName()" #lname placeholder="Change Last Name">
                     <button (click)="changeLastName(lname.value)" class="btn btn-outline-primary" type="button">
                         Change Last Name
                     </button>
