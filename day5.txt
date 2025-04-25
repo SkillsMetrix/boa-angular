@@ -1,14 +1,73 @@
+import { Injectable } from '@angular/core';
+import { Users } from '../objects/Users';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class UsersService {
+
+  loadUsers(): string[] {
+    return ['admin', 'manager', 'qa']
+  }
+  loadUserObj(): Users[] {
+    return [
+      { uname: 'mohan', email: "mohan@mail.com", income: 2345 },
+      { uname: 'shivam', email: "shivam@mail.com", income: 3345 },
+    ]
+  }
+constructor(private http:HttpClient){}
+
+loadUserFromDB():Observable<any[]>{
+return this.http.get<any[]>('https://jsonplaceholder.typicode.com/users')
+}
+}
+----------
 
 import { TestBed } from "@angular/core/testing"
-import { AppComponent } from "./app.component"
+import { UsersService } from "./shared/services/users.service"
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing'
 
-describe('AppComponentSuite',()=>{
-    beforeEach(() => TestBed.configureTestingModule({
-        declarations:[AppComponent]
-    }))
-    it('check the title property',()=>{
-        const fixture= TestBed.createComponent(AppComponent)
-        const app= fixture.componentInstance
-        expect(app.title).toEqual('my-app')
+
+describe('Test Service',()=>{
+    let service:UsersService
+    let httpMock:HttpTestingController
+
+    beforeEach(()=>{
+        TestBed.configureTestingModule({
+            imports:[HttpClientTestingModule],
+            providers:[UsersService]
+        })
+        service= TestBed.inject(UsersService)
+        httpMock= TestBed.inject(HttpTestingController)
+    })
+    afterEach(()=>{
+        httpMock.verify()
+    })
+    it('test the real value',()=>{
+        const mockUsers=[{id:1,name:'Alice'},{id:2,name:'Bob'}]
+        service.loadUserFromDB().subscribe(users =>{
+            expect(users.length).toBe(2)
+            expect(users).toEqual(mockUsers)
+        })
+        const req= httpMock.expectOne('https://jsonplaceholder.typicode.com/users')
+        expect(req.request.method).toBe('GET')
+        req.flush(mockUsers)
+
+    })
+    
+})
+
+
+---------
+
+import { ReversePipe } from "./Reverse.pipe"
+
+
+describe('test pipe app',()=>{
+    it('test the reverse value',()=>{
+        let revers= new ReversePipe()
+        expect(revers.transform('hello')).toEqual('olleh')
     })
 })
